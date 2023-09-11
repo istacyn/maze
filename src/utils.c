@@ -1,23 +1,27 @@
-#include <SDL2/SDL.h>
-#include "window.h"
+#include "utils.h"
+#include "constants.h"
+#include <math.h>
 
 /**
- * cleanUpAndExit - Function to handle cleanup in case of error.
- * @instance: A pointer to the SDL_Instance object.
- * @errorCode: The error code if any.
- * Return: Nothing
+ * normalizeAngle - Normalize an angle to be within the range [0, 2*PI).
+ * @angle: A pointer to the angle to be normalized.
  */
-
-void cleanUpAndExit(SDL_Instance *instance, int errorCode)
+void normalizeAngle(float *angle)
 {
-	if (instance->renderer != NULL)
-	{
-		SDL_DestroyRenderer(instance->renderer);
-	}
-	if (instance->window != NULL)
-	{
-		SDL_DestroyWindow(instance->window);
-	}
-	SDL_Quit();
-	exit(errorCode);
+	*angle = remainder(*angle, TWO_PI);
+	if (*angle < 0)
+		*angle = TWO_PI + *angle;
+}
+
+/**
+ * calculateDistance - Calculate the Euclidean distance between two points.
+ * @x1: The x-coordinate of the first point.
+ * @y1: The y-coordinate of the first point.
+ * @x2: The x-coordinate of the second point.
+ * @y2: The y-coordinate of the second point.
+ * Return: The Euclidean distance between the two points.
+ */
+int calculateDistance(float x1, float y1, float x2, float y2)
+{
+	return (sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)));
 }

@@ -1,31 +1,130 @@
-#include "window.h"
-#include "utils.h"
+#include <stdio.h>
+#include <stdint.h>
+#include <stdbool.h>
+#include "constants.h"
+#include "sdl_graphics.h"
+#include "map.h"
+#include "player.h"
+#include "raycasting.h"
+#include "wall.h"
+#include "sprite.h"
+#include "textures.h"
 
-int main() {
-    SDL_Instance instance;
+bool isGameActive = false;
+int ticksLastFrame;
 
-    /*Initialize the SDL instance*/
-    if (init_instance(&instance) != 0)
+void setup(void)
+{
+    // Asks uPNG library to decode all PNG files and loads the wallTextures array
+    loadTextures();
+}
+
+void processInput(void)
+{
+    SDL_Event event;
+
+    SDL_PollEvent(&event);
+    switch (event.type)
     {
-        return (1); // Initialization failed
+    	case SDL_QUIT:
+    	{
+        	isGameActive = false;
+        	break;
+    	}
+    	case SDL_KEYDOWN:
+    	{
+        	if (event.key.keysym.sym == SDLK_ESCAPE)
+            		isGameActive = false;
+        	if (event.key.keysym.sym == SDLK_UP)
+            		player.walkDirection = +1;
+        	if (event.key.keysym.sym == SDLK_DOWN)
+            		player.walkDirection = -1;
+        	if (event.key.keysym.sym == SDLK_RIGHT)
+            		player.turnDirection = +1;
+        	if (event.key.keysym.sym == SDLK_LEFT)
+            		player.turnDirection = -1;
+        	break;
+    	}
+    	case SDL_KEYUP:
+    	{
+        	if (event.key.keysym.sym == SDLK_ESCAPE)
+            		isGameActive = false;
+        	if (event.key.keysym.sym == SDLK_UP)
+            		player.walkDirection = 0;
+        	if (event.key.keysym.sym == SDLK_DOWN)
+            		player.walkDirection = 0;
+        	if (event.key.keysym.sym == SDLK_RIGHT)
+           	 	player.turnDirection = 0;
+        	if (event.key.keysym.sym == SDLK_LEFT)
+            		player.turnDirection = 0;
+        	break;
+    	}
+    }
+}
+
+void update(void)
+{
+    int timeToWait;
+    float deltaTime;
+
+    // Compute how long we have until the reach the target frame time in milliseconds
+    timeToWait = FRAME_TIME_LENGTH - (SDL_GetTicks() - ticksLastFrame);
+
+    // Only delay execution if we are running too fast
+    if (timeToWait > 0 && timeToWait <= FRAME_TIME_LENGTH)
+    {
+        SDL_Delay(timeToWait);
     }
 
-    // Main program loop
-    // while (1) {
-        // handleInput(); // Handle user input events
+    // Compute the delta time to be used as an update factor when changing game objects
+    deltaTime = (SDL_GetTicks() - ticksLastFrame) / 2000.0f;
 
-        // Render the scene
-        // SDL_SetRenderDrawColor(instance.renderer, 255, 255, 255, 255);
-        // SDL_RenderClear(instance.renderer);
+    // Store the milliseconds of the current frame to be used in the future
+    ticksLastFrame = SDL_GetTicks();
 
-        // Implement your raycasting or rendering logic here
+    movePlayer(deltaTime);
+    castAllRays();
+}
 
-        // SDL_RenderPresent(instance.renderer);
- //}
+void render(void)
+{
+    // clear the color buffer
+    clearColorBuffer(0xFF000000);
 
-    // Clean up before exiting (This line will never be reached in this loop)
-    // cleanupGame(&instance);
-    cleanUpAndExit(&instance, 1);
-    
-    return (0); // Successful execution (This line will never be reached in this loop)
+    // Render the wall and sprites
+    renderWallProjection();
+    renderSpriteProjection();
+
+    // Render the minimap objects
+    // display the minimap
+    renderMapGrid();
+    renderMapRays();
+    renderMapSprites();
+    renderMapPlayer();
+
+    renderColorBuffer();
+}
+
+void releaseResources(void)
+{
+    freeTextures();
+    destroyWindow();
+}
+
+int main(void)
+{
+    isGameActive = initWindow();
+
+    setup();
+
+    while (isGameActive)
+    {
+        processInput();
+        update();
+        render();
+    }
+
+    releaseResources();
+
+    return (EXIT_SUCCESS);
 }

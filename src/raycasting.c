@@ -1,134 +1,201 @@
-#include <math.h>
 #include "raycasting.h"
-#include "rendering.h"
-#include "map.h"
-#include <SDL2/SDL.h>
+#include "utils.h"
+
+ray_t rays[NUM_RAYS];
+
+bool isRayFacingDown(float angle)
+{
+    return (angle > 0 && angle < PI);
+}
+
+bool isRayFacingUp(float angle)
+{
+    return (!isRayFacingDown(angle));
+}
+
+bool isRayFacingRight(float angle)
+{
+    return (angle < 0.5 * PI || angle > 1.5 * PI);
+}
+
+bool isRayFacingLeft(float angle)
+{
+    return (!isRayFacingRight(angle));
+}
 
 /**
- * performRaycasting - Calculates and performs raycasting to
- * render the 3D scene on the screen.
- * It casts rays from the player's viewpoint and renders vertical
- * wall columns based on the calculated distances
- * to simulate a 3D perspective.
- *
- * @instance: Pointer to SDL_Instance object that holds window and renderer.
- * @player: Pointer to Player structure representing player's view and position.
- * @rays: Array of Ray structures representing rays cast from player's view.
+ * castRay - Casts a ray to detect wall collisions and stores ray information.
+ * @rayAngle: The angle at which the ray is cast.
+ * @stripId: The ID of the ray strip for storing ray information.
  */
-void performRaycasting(SDL_Instance *instance, Player *player, Ray *rays)
+void castRay(float rayAngle, int stripId)
 {
-	double cameraX;
-	double rayDirX, rayDirY;
-	double mapX, mapY;
-	double sideDistX, sideDistY;
-	double deltaDistX, deltaDistY;
-	double perpWallDist;
-	int stepX, stepY;
-	int hit = 0, side;
+    float xintercept;
+    float yintercept;
+    float xstep;
+    float ystep;
 
-	calculateRayDirection(player, cameraX, &rayDirX, &rayDirY);
-	/* Loop through each column of pixels on the screen */
-	for (int x = 0; x < SCREEN_WIDTH; x++)
-	{
-		/* Calculate ray position and direction */
-		cameraX = 2 * x / (double)SCREEN_WIDTH - 1; /*x-coordinate in camera space*/
-		calculateRayDirection(player, cameraX, &rayDirX, &rayDirY);
-		// rayDirX = player->dirX + player->planeX * cameraX;
-		// rayDirY = player->dirY + player->planeY * cameraX;
+    // Horizontal ray
+    bool foundHorzWallHit = false;
+    float horzWallHitX = 0;
+    float horzWallHitY = 0;
+    int horzWallTexture = 0;
+    float nextHorzTouchX;
+    float nextHorzTouchY;
+    float horzHitDistance;
 
-		/* Map position of player to the grid */
-		mapX = (int)player->posX;
-		mapY = (int)player->posY;
+    // Vertical ray
+    bool foundVertWallHit = false;
+    float vertWallHitX = 0;
+    float vertWallHitY = 0;
+    int vertWallTexture = 0;
+    float nextVertTouchX;
+    float nextVertTouchY;
+    float vertHitDistance;
 
-		/* Calculate delta distance for x and y */
-		calculateDeltaDistances(rayDirX, rayDirY, &sideDistX, &sideDistY);
-		// deltaDistX = fabs(1 / rayDirX);
-		// deltaDistY = fabs(1 / rayDirY);
+    float xToCheck;
+    float yToCheck;
 
-		/* Initialize sideDist values based on ray direction */
-		if (rayDirX < 0)
-		{
-			stepX = -1;
-			sideDistX = (player->posX - mapX) * deltaDistX;
-		}
-		else
-		{
-			stepX = 1;
-			sideDistX = (mapX + 1.0 - player->posX) * deltaDistX;
-		}
-		if (rayDirY < 0)
-                {
-                        stepY = -1;
-                        sideDistY = (player->posY - mapY) * deltaDistY;
-                }
-                else
-                {
-                        stepY = 1;
-                        sideDistY = (mapY + 1.0 - player->posY) * deltaDistY;
-                }
+    normalizeAngle(&rayAngle);
 
-		/* Perform DDA algorithm to find distance to the wall*/
-		while (!hit)
-		{
-			if (sideDistX < sideDistY)
-			{
-				sideDistX += deltaDistX;
-				mapX += stepX;
-				side = 0;
-			}
-			else
-			{
-				sideDistY += deltaDistY;
-                                mapY += stepY;
-                                side = 1;
-			}
-			/* Check if ray has hit a wall*/
-			// if (getMapValue(gameMap, mapX, mapY) > 0)
-			// {
-			//	hit = 1;
-			// }
-		}
+    // Horizontal Ray-Grid Intersection
+    foundHorzWallHit = false;
+    horzWallHitX = 0;
+    horzWallHitY = 0;
+    horzWallTexture = 0;
 
-		/* Store distance in rays array*/
-		rays[x].distance = (side == 0)
-			? (mapX - player->posX + (1 - stepX) / 2) / rayDirX
-			: (mapY - player->posY + (1 - stepY) / 2) / rayDirY;
+    yintercept = floor(player.y / CELL_SIZE) * CELL_SIZE;
+    yintercept += isRayFacingDown(rayAngle) ? CELL_SIZE : 0;
 
-		/* Calculate perpendicular wall distance */
-		// if (side == 0)
-		// {
-		//	perpWallDist = (mapX - player->posX + (1 - stepX) / 2) / rayDirX;
-		// }
-		// else
-		//{
-		//	perpWallDist = (mapY - player->posY + (1 - stepY) / 2) / rayDirY;
-		// }
+    xintercept = player.x + (yintercept - player.y) / tan(rayAngle);
 
-		/* Calculate perpendicular wall distance if needed */
-                double perpWallDist = rays[x].distance;
+    ystep = CELL_SIZE;
+    ystep *= isRayFacingUp(rayAngle) ? -1 : 1;
 
-		/* Calculate wall height and draw the wall column*/
-		int lineHeight = (int)(SCREEN_HEIGHT / perpWallDist);
-		int drawStart = -lineHeight / 2 + SCREEN_HEIGHT / 2;
-		int drawEnd = lineHeight / 2 + SCREEN_HEIGHT / 2;
+    xstep = CELL_SIZE / tan(rayAngle);
+    xstep *= (isRayFacingLeft(rayAngle) && xstep > 0) ? -1 : 1;
+    xstep *= (isRayFacingRight(rayAngle) && xstep < 0) ? -1 : 1;
 
-		/* Render the wall column*/
-		renderWallColumn(instance->renderer, x, drawStart, drawEnd);
+    nextHorzTouchX = xintercept;
+    nextHorzTouchY = yintercept;
 
-		hit = 0;
-	}
+    while (isWithinMapBounds(nextHorzTouchX, nextHorzTouchY))
+    {
+        xToCheck = nextHorzTouchX;
+        yToCheck = nextHorzTouchY + (isRayFacingUp(rayAngle) ? -1 : 0);
 
-	SDL_RenderPresent(instance->renderer);
+        if (isWallAt(xToCheck, yToCheck))
+        {
+            horzWallHitX = nextHorzTouchX;
+            horzWallHitY = nextHorzTouchY;
+            horzWallTexture = getCellValue((int)floor(yToCheck / CELL_SIZE), (int)floor(xToCheck / CELL_SIZE));
+            foundHorzWallHit = true;
+            break;
+        }
+        else
+        {
+            nextHorzTouchX += xstep;
+            nextHorzTouchY += ystep;
+        }
+    }
+
+    // Vertical Ray-Grid Intersection
+    foundVertWallHit = false;
+    vertWallHitX = 0;
+    vertWallHitY = 0;
+    vertWallTexture = 0;
+
+    xintercept = floor(player.x / CELL_SIZE) * CELL_SIZE;
+    xintercept += isRayFacingRight(rayAngle) ? CELL_SIZE : 0;
+
+    yintercept = player.y + (xintercept - player.x) * tan(rayAngle);
+
+    xstep = CELL_SIZE;
+    xstep *= isRayFacingLeft(rayAngle) ? -1 : 1;
+
+    ystep = CELL_SIZE * tan(rayAngle);
+    ystep *= (isRayFacingUp(rayAngle) && ystep > 0) ? -1 : 1;
+    ystep *= (isRayFacingDown(rayAngle) && ystep < 0) ? -1 : 1;
+
+    nextVertTouchX = xintercept;
+    nextVertTouchY = yintercept;
+
+    while (isWithinMapBounds(nextVertTouchX, nextVertTouchY))
+    {
+        xToCheck = nextVertTouchX + (isRayFacingLeft(rayAngle) ? -1 : 0);
+        yToCheck = nextVertTouchY;
+
+        if (isWallAt(xToCheck, yToCheck))
+        {
+            vertWallHitX = nextVertTouchX;
+            vertWallHitY = nextVertTouchY;
+            vertWallTexture = getCellValue((int)floor(yToCheck / CELL_SIZE), (int)floor(xToCheck / CELL_SIZE));
+            foundVertWallHit = true;
+            break;
+        }
+        else
+        {
+            nextVertTouchX += xstep;
+            nextVertTouchY += ystep;
+        }
+    }
+
+    horzHitDistance = foundHorzWallHit
+        ? calculateDistance(player.x, player.y, horzWallHitX, horzWallHitY)
+        : FLT_MAX;
+    vertHitDistance = foundVertWallHit
+        ? calculateDistance(player.x, player.y, vertWallHitX, vertWallHitY)
+        : FLT_MAX;
+
+    if (vertHitDistance < horzHitDistance)
+    {
+        rays[stripId].distance = vertHitDistance;
+        rays[stripId].wallHitX = vertWallHitX;
+        rays[stripId].wallHitY = vertWallHitY;
+        rays[stripId].texture = vertWallTexture;
+        rays[stripId].wasHitVertical = true;
+        rays[stripId].rayAngle = rayAngle;
+    }
+    else
+    {
+        rays[stripId].distance = horzHitDistance;
+        rays[stripId].wallHitX = horzWallHitX;
+        rays[stripId].wallHitY = horzWallHitY;
+        rays[stripId].texture = horzWallTexture;
+        rays[stripId].wasHitVertical = false;
+        rays[stripId].rayAngle = rayAngle;
+    }
 }
 
-void calculateRayDirection(Player *player, double cameraX, double *rayDirX, double *rayDirY)
+/**
+ * castAllRays - Cast rays for all columns to create the 3D rendering effect.
+ */
+void castAllRays(void)
 {
-    *rayDirX = player->dirX + player->planeX * cameraX;
-    *rayDirY = player->dirY + player->planeY * cameraX;
+    float rayAngle;
+    float distanceProjPlane;
+
+        distanceProjPlane = (SCREEN_WIDTH / 2) / tan(FOV_ANGLE / 2);
+
+    for (int col = 0; col < NUM_RAYS; col++)
+    {
+        rayAngle = player.rotationAngle + atan((col - NUM_RAYS / 2) / distanceProjPlane);
+        castRay(rayAngle, col);
+    }
 }
 
-void calculateDeltaDistances(double rayDirX, double rayDirY, double *deltaDistX, double *deltaDistY)
+void renderMapRays(void)
 {
-    *deltaDistX = fabs(1 / rayDirX);
-    *deltaDistY = fabs(1 / rayDirY);
+    for (int i = 0; i < NUM_RAYS; i += 50)
+    {
+        drawLine(
+            player.x * MINIMAP_SCALE_FACTOR,
+            player.y * MINIMAP_SCALE_FACTOR,
+            rays[i].wallHitX * MINIMAP_SCALE_FACTOR,
+            rays[i].wallHitY * MINIMAP_SCALE_FACTOR,
+            0xFF0000FF
+        );
+    }
 }
+
+
