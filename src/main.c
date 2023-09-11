@@ -100,7 +100,7 @@ void render(void)
     renderMapGrid();
     renderMapRays();
     renderMapSprites();
-    renderMapPlayer();
+    drawPlayerOnMinimap();
 
     renderColorBuffer();
 }

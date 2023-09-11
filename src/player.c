@@ -1,6 +1,5 @@
 #include "player.h"
 #include "utils.h"
-#include "sdl_graphics.h"
 
 player_t player = 
 {
@@ -26,11 +25,11 @@ void movePlayer(float deltaTime)
 	float newPlayerY;
 
 	/* Update the player's rotation angle */
-	player.rotationAngle += player.rotationSpeed * player.turnDirection *deltaTime;
+	player.rotationAngle += player.turnDirection * player.rotationSpeed *deltaTime;
 	normalizeAngle(&player.rotationAngle);
 
 	/* Calculate step size based on movement direction and speed */
-	stepSize = player.moveSpeed * player.walkDirection * deltaTime;
+	stepSize = player.walkDirection * player.moveSpeed * deltaTime;
 
 	/* Calculate new player position*/
 	newPlayerX = player.x + cos(player.rotationAngle) * stepSize;
@@ -45,15 +44,15 @@ void movePlayer(float deltaTime)
 }
 
 /**
- * renderMapPlayer - Render the player on the minimap.
+ * drawPlayerOnMinimap - Render the player on the minimap.
  */
-void renderMapPlayer(void) {
+void drawPlayerOnMinimap(void) {
     // Draw a rectangle representing the player on the minimap
     drawFilledRect(
-        player.x * MINIMAP_SCALE_FACTOR,
-        player.y * MINIMAP_SCALE_FACTOR,
-        player.width * MINIMAP_SCALE_FACTOR,
-        player.height * MINIMAP_SCALE_FACTOR,
+        player.x * MINIMAP_SCALE,
+        player.y * MINIMAP_SCALE,
+        player.width * MINIMAP_SCALE,
+        player.height * MINIMAP_SCALE,
         0xFFFFFFFF
     );
 }
