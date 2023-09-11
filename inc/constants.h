@@ -15,7 +15,7 @@
 #define NUM_TEXTURES 14
 #define NUM_SPRITES 6
 
-#define MINIMAP_SCALE_FACTOR 0.2
+#define MINIMAP_SCALE 0.2
 
 #define FOV_ANGLE (60 * (PI / 180))
 
