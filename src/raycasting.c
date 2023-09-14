@@ -1,201 +1,186 @@
 #include "raycasting.h"
-#include "utils.h"
+#include "geometry.h"
 
 ray_t rays[NUM_RAYS];
 
-bool isRayFacingDown(float angle)
-{
-    return (angle > 0 && angle < PI);
-}
-
-bool isRayFacingUp(float angle)
-{
-    return (!isRayFacingDown(angle));
-}
-
-bool isRayFacingRight(float angle)
-{
-    return (angle < 0.5 * PI || angle > 1.5 * PI);
-}
-
-bool isRayFacingLeft(float angle)
-{
-    return (!isRayFacingRight(angle));
-}
-
 /**
- * castRay - Casts a ray to detect wall collisions and stores ray information.
+ * calculateRayCollision - Casts a ray to detect wall collisions
+				and stores ray information.
  * @rayAngle: The angle at which the ray is cast.
- * @stripId: The ID of the ray strip for storing ray information.
+ * @rayId: The ID of the ray strip for storing ray information.
  */
-void castRay(float rayAngle, int stripId)
+void calculateRayCollision(float rayAngle, int rayId)
 {
-    float xintercept;
-    float yintercept;
-    float xstep;
-    float ystep;
+	float interceptX;
+	float interceptY;
+	float xStep;
+	float yStep;
 
-    // Horizontal ray
-    bool foundHorzWallHit = false;
-    float horzWallHitX = 0;
-    float horzWallHitY = 0;
-    int horzWallTexture = 0;
-    float nextHorzTouchX;
-    float nextHorzTouchY;
-    float horzHitDistance;
+	/* Horizontal ray */
+	bool foundHorzWallHit = false;
+	float horzWallHitX = 0;
+	float horzWallHitY = 0;
+	int horzWallTexture = 0;
+	float nextHorzTouchX;
+	float nextHorzTouchY;
+	float horzHitDistance;
 
-    // Vertical ray
-    bool foundVertWallHit = false;
-    float vertWallHitX = 0;
-    float vertWallHitY = 0;
-    int vertWallTexture = 0;
-    float nextVertTouchX;
-    float nextVertTouchY;
-    float vertHitDistance;
+	/* Vertical ray */
+	bool foundVertWallHit = false;
+	float vertWallHitX = 0;
+	float vertWallHitY = 0;
+	int vertWallTexture = 0;
+	float nextVertTouchX;
+	float nextVertTouchY;
+	float vertHitDistance;
 
-    float xToCheck;
-    float yToCheck;
+	float xToCheck;
+	float yToCheck;
 
-    normalizeAngle(&rayAngle);
+	normalizeAngle(&rayAngle);
 
-    // Horizontal Ray-Grid Intersection
-    foundHorzWallHit = false;
-    horzWallHitX = 0;
-    horzWallHitY = 0;
-    horzWallTexture = 0;
+	/* Horizontal Ray-Grid Intersection */
+	foundHorzWallHit = false;
+	horzWallHitX = 0;
+	horzWallHitY = 0;
+	horzWallTexture = 0;
 
-    yintercept = floor(player.y / CELL_SIZE) * CELL_SIZE;
-    yintercept += isRayFacingDown(rayAngle) ? CELL_SIZE : 0;
+	interceptY = floor(player.y / CELL_SIZE) * CELL_SIZE;
+	interceptY += isRayFacingDown(rayAngle) ? CELL_SIZE : 0;
 
-    xintercept = player.x + (yintercept - player.y) / tan(rayAngle);
+	interceptX = player.x + (interceptY - player.y) / tan(rayAngle);
 
-    ystep = CELL_SIZE;
-    ystep *= isRayFacingUp(rayAngle) ? -1 : 1;
 
-    xstep = CELL_SIZE / tan(rayAngle);
-    xstep *= (isRayFacingLeft(rayAngle) && xstep > 0) ? -1 : 1;
-    xstep *= (isRayFacingRight(rayAngle) && xstep < 0) ? -1 : 1;
+	yStep = CELL_SIZE;
+	yStep *= isRayFacingUp(rayAngle) ? -1 : 1;
 
-    nextHorzTouchX = xintercept;
-    nextHorzTouchY = yintercept;
+	xStep = CELL_SIZE / tan(rayAngle);
+	xStep *= (isRayFacingLeft(rayAngle) && xStep > 0) ? -1 : 1;
+	xStep *= (isRayFacingRight(rayAngle) && xStep < 0) ? -1 : 1;
 
-    while (isWithinMapBounds(nextHorzTouchX, nextHorzTouchY))
-    {
-        xToCheck = nextHorzTouchX;
-        yToCheck = nextHorzTouchY + (isRayFacingUp(rayAngle) ? -1 : 0);
+	nextHorzTouchX = interceptX;
+	nextHorzTouchY = interceptY;
 
-        if (isWallAt(xToCheck, yToCheck))
-        {
-            horzWallHitX = nextHorzTouchX;
-            horzWallHitY = nextHorzTouchY;
-            horzWallTexture = getCellValue((int)floor(yToCheck / CELL_SIZE), (int)floor(xToCheck / CELL_SIZE));
-            foundHorzWallHit = true;
-            break;
-        }
-        else
-        {
-            nextHorzTouchX += xstep;
-            nextHorzTouchY += ystep;
-        }
-    }
+	while (isWithinMapBounds(nextHorzTouchX, nextHorzTouchY))
+	{
+		xToCheck = nextHorzTouchX;
+		yToCheck = nextHorzTouchY + (isRayFacingUp(rayAngle) ? -1 : 0);
 
-    // Vertical Ray-Grid Intersection
-    foundVertWallHit = false;
-    vertWallHitX = 0;
-    vertWallHitY = 0;
-    vertWallTexture = 0;
+		if (isWallAt(xToCheck, yToCheck))
+		{
+			horzWallHitX = nextHorzTouchX;
+			horzWallHitY = nextHorzTouchY;
+			horzWallTexture = getCellValue((int)floor(yToCheck / CELL_SIZE),
+						(int)floor(xToCheck / CELL_SIZE));
+			foundHorzWallHit = true;
+			break;
+		}
+		else
+		{
+			nextHorzTouchX += xStep;
+			nextHorzTouchY += yStep;
+		}
+	}
 
-    xintercept = floor(player.x / CELL_SIZE) * CELL_SIZE;
-    xintercept += isRayFacingRight(rayAngle) ? CELL_SIZE : 0;
+	/* Vertical Ray-Grid Intersection */
+	foundVertWallHit = false;
+	vertWallHitX = 0;
+	vertWallHitY = 0;
+	vertWallTexture = 0;
 
-    yintercept = player.y + (xintercept - player.x) * tan(rayAngle);
+	interceptX = floor(player.x / CELL_SIZE) * CELL_SIZE;
+	interceptX += isRayFacingRight(rayAngle) ? CELL_SIZE : 0;
 
-    xstep = CELL_SIZE;
-    xstep *= isRayFacingLeft(rayAngle) ? -1 : 1;
+	interceptY = player.y + (interceptX - player.x) * tan(rayAngle);
 
-    ystep = CELL_SIZE * tan(rayAngle);
-    ystep *= (isRayFacingUp(rayAngle) && ystep > 0) ? -1 : 1;
-    ystep *= (isRayFacingDown(rayAngle) && ystep < 0) ? -1 : 1;
+	xStep = CELL_SIZE;
+	xStep *= isRayFacingLeft(rayAngle) ? -1 : 1;
 
-    nextVertTouchX = xintercept;
-    nextVertTouchY = yintercept;
+	yStep = CELL_SIZE * tan(rayAngle);
+	yStep *= (isRayFacingUp(rayAngle) && yStep > 0) ? -1 : 1;
+	yStep *= (isRayFacingDown(rayAngle) && yStep < 0) ? -1 : 1;
 
-    while (isWithinMapBounds(nextVertTouchX, nextVertTouchY))
-    {
-        xToCheck = nextVertTouchX + (isRayFacingLeft(rayAngle) ? -1 : 0);
-        yToCheck = nextVertTouchY;
+	nextVertTouchX = interceptX;
+	nextVertTouchY = interceptY;
 
-        if (isWallAt(xToCheck, yToCheck))
-        {
-            vertWallHitX = nextVertTouchX;
-            vertWallHitY = nextVertTouchY;
-            vertWallTexture = getCellValue((int)floor(yToCheck / CELL_SIZE), (int)floor(xToCheck / CELL_SIZE));
-            foundVertWallHit = true;
-            break;
-        }
-        else
-        {
-            nextVertTouchX += xstep;
-            nextVertTouchY += ystep;
-        }
-    }
+	while (isWithinMapBounds(nextVertTouchX, nextVertTouchY))
+	{
+		xToCheck = nextVertTouchX + (isRayFacingLeft(rayAngle) ? -1 : 0);
+		yToCheck = nextVertTouchY;
 
-    horzHitDistance = foundHorzWallHit
-        ? calculateDistance(player.x, player.y, horzWallHitX, horzWallHitY)
-        : FLT_MAX;
-    vertHitDistance = foundVertWallHit
-        ? calculateDistance(player.x, player.y, vertWallHitX, vertWallHitY)
-        : FLT_MAX;
+		if (isWallAt(xToCheck, yToCheck))
+		{
+			vertWallHitX = nextVertTouchX;
+			vertWallHitY = nextVertTouchY;
+			vertWallTexture = getCellValue((int)floor(yToCheck / CELL_SIZE),
+						(int)floor(xToCheck / CELL_SIZE));
+			foundVertWallHit = true;
+			break;
+		}
+		else
+		{
+			nextVertTouchX += xStep;
+			nextVertTouchY += yStep;
+		}
+	}
 
-    if (vertHitDistance < horzHitDistance)
-    {
-        rays[stripId].distance = vertHitDistance;
-        rays[stripId].wallHitX = vertWallHitX;
-        rays[stripId].wallHitY = vertWallHitY;
-        rays[stripId].texture = vertWallTexture;
-        rays[stripId].wasHitVertical = true;
-        rays[stripId].rayAngle = rayAngle;
-    }
-    else
-    {
-        rays[stripId].distance = horzHitDistance;
-        rays[stripId].wallHitX = horzWallHitX;
-        rays[stripId].wallHitY = horzWallHitY;
-        rays[stripId].texture = horzWallTexture;
-        rays[stripId].wasHitVertical = false;
-        rays[stripId].rayAngle = rayAngle;
-    }
+	horzHitDistance = foundHorzWallHit
+		? calculateDistance(player.x, player.y, horzWallHitX, horzWallHitY)
+		: FLT_MAX;
+	vertHitDistance = foundVertWallHit
+		? calculateDistance(player.x, player.y, vertWallHitX, vertWallHitY)
+		: FLT_MAX;
+
+	if (vertHitDistance < horzHitDistance)
+	{
+		rays[rayId].distance = vertHitDistance;
+		rays[rayId].wallHitX = vertWallHitX;
+		rays[rayId].wallHitY = vertWallHitY;
+		rays[rayId].texture = vertWallTexture;
+		rays[rayId].wasHitVertical = true;
+		rays[rayId].rayAngle = rayAngle;
+	}
+	else
+	{
+		rays[rayId].distance = horzHitDistance;
+		rays[rayId].wallHitX = horzWallHitX;
+		rays[rayId].wallHitY = horzWallHitY;
+		rays[rayId].texture = horzWallTexture;
+		rays[rayId].wasHitVertical = false;
+		rays[rayId].rayAngle = rayAngle;
+	}
 }
 
 /**
- * castAllRays - Cast rays for all columns to create the 3D rendering effect.
+ * castPlayerRays - Cast rays for all columns to create the 3D rendering effect.
  */
-void castAllRays(void)
+void castPlayerRays(void)
 {
-    float rayAngle;
-    float distanceProjPlane;
+	float rayAngle;
+	float distanceProjPlane;
 
-        distanceProjPlane = (SCREEN_WIDTH / 2) / tan(FOV_ANGLE / 2);
+	distanceProjPlane = (SCREEN_WIDTH / 2) / tan(FOV_ANGLE / 2);
 
-    for (int col = 0; col < NUM_RAYS; col++)
-    {
-        rayAngle = player.rotationAngle + atan((col - NUM_RAYS / 2) / distanceProjPlane);
-        castRay(rayAngle, col);
-    }
+	for (int col = 0; col < NUM_RAYS; col++)
+	{
+		rayAngle = player.rotationAngle + atan((col - NUM_RAYS / 2) /
+				distanceProjPlane);
+		calculateRayCollision(rayAngle, col);
+	}
 }
 
-void renderMapRays(void)
+void drawMapRays(void)
 {
-    for (int i = 0; i < NUM_RAYS; i += 50)
-    {
-        drawLine(
-            player.x * MINIMAP_SCALE_FACTOR,
-            player.y * MINIMAP_SCALE_FACTOR,
-            rays[i].wallHitX * MINIMAP_SCALE_FACTOR,
-            rays[i].wallHitY * MINIMAP_SCALE_FACTOR,
-            0xFF0000FF
-        );
-    }
+	for (int i = 0; i < NUM_RAYS; i += 50)
+	{
+		drawLine(
+			player.x * MINIMAP_SCALE,
+			player.y * MINIMAP_SCALE,
+			rays[i].wallHitX * MINIMAP_SCALE,
+			rays[i].wallHitY * MINIMAP_SCALE,
+			0xFF0000FF
+		);
+	}
 }
 
 

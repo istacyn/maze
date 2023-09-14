@@ -12,6 +12,6 @@
 bool isWallAt(float x, float y);
 bool isWithinMapBounds(float x, float y);
 int getCellValue(int row, int col);
-void renderMapGrid(void);
+void drawMapGrid(void);
 
 #endif /* MAP_H */

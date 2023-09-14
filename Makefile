@@ -5,7 +5,8 @@ CFLAGS = -std=c99 -I./inc -Wall -Werror -Wextra -pedantic -g
 # Source files
 SRC_DIR = ./src
 SRC_FILES = main.c player.c sdl_graphics.c textures.c upng.c \
-                utils.c map.c raycasting.c sprite.c wall.c
+		geometry.c map.c ray_direction.c raycasting.c \
+		sprite.c wall.c init_window.c destroy_window.c
 SRCS = $(addprefix $(SRC_DIR)/,$(SRC_FILES))
 
 # Object files
@@ -13,7 +14,7 @@ OBJ_DIR = ./obj
 OBJS = $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SRCS))
 
 # Output executable
-OUT = raycast
+OUT = maze
 
 # Libraries
 LIBS = -lSDL2 -lm

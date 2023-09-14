@@ -1,8 +1,7 @@
 #include "player.h"
-#include "utils.h"
+#include "geometry.h"
 
-player_t player = 
-{
+player_t player = {
 	.x = SCREEN_WIDTH / 2,
 	.y = SCREEN_HEIGHT / 2,
 	.width = 1,
@@ -25,7 +24,8 @@ void movePlayer(float deltaTime)
 	float newPlayerY;
 
 	/* Update the player's rotation angle */
-	player.rotationAngle += player.turnDirection * player.rotationSpeed *deltaTime;
+	player.rotationAngle += player.turnDirection *
+		player.rotationSpeed * deltaTime;
 	normalizeAngle(&player.rotationAngle);
 
 	/* Calculate step size based on movement direction and speed */
@@ -33,7 +33,7 @@ void movePlayer(float deltaTime)
 
 	/* Calculate new player position*/
 	newPlayerX = player.x + cos(player.rotationAngle) * stepSize;
-        newPlayerY = player.y + sin(player.rotationAngle) * stepSize;
+	newPlayerY = player.y + sin(player.rotationAngle) * stepSize;
 
 	/* Check for collisions with walls before updating player's position */
 	if (!isWallAt(newPlayerX, newPlayerY))
@@ -46,13 +46,15 @@ void movePlayer(float deltaTime)
 /**
  * drawPlayerOnMinimap - Render the player on the minimap.
  */
-void drawPlayerOnMinimap(void) {
-    // Draw a rectangle representing the player on the minimap
-    drawFilledRect(
-        player.x * MINIMAP_SCALE,
-        player.y * MINIMAP_SCALE,
-        player.width * MINIMAP_SCALE,
-        player.height * MINIMAP_SCALE,
-        0xFFFFFFFF
-    );
+void drawPlayerOnMinimap(void)
+{
+	/* Draw a rectangle representing the player on the minimap */
+	drawFilledRect
+	(
+		player.x * MINIMAP_SCALE,
+		player.y * MINIMAP_SCALE,
+		player.width * MINIMAP_SCALE,
+		player.height * MINIMAP_SCALE,
+		0xFFFFFFFF
+	);
 }

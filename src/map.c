@@ -1,20 +1,20 @@
 #include "map.h"
 
-// Define the game map with wall and empty space layout
+/* Define the game map layout */
 static const int map[MAP_HEIGHT][MAP_WIDTH] = {
-    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 2, 2, 0, 3, 0, 4, 0, 5, 0, 6, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 5},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 5},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 5},
-    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 5, 5, 5, 5, 5, 5}
+	{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1},
+	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, 0, 0, 1},
+	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+	{1, 0, 0, 0, 2, 2, 0, 3, 0, 4, 0, 5, 0, 6, 0, 0, 0, 0, 0, 1},
+	{1, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+	{1, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 1},
+	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5},
+	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 5},
+	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 5},
+	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 5},
+	{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 5, 5, 5, 5, 5, 5}
 };
 
 /**
@@ -25,15 +25,16 @@ static const int map[MAP_HEIGHT][MAP_WIDTH] = {
  */
 bool isWallAt(float x, float y)
 {
-    int mapGridIndexX;
-    int mapGridIndexY;
+	int mapGridIndexX;
+	int mapGridIndexY;
 
-    if (x < 0 || x >= MAP_WIDTH * CELL_SIZE || y < 0 || y >= MAP_HEIGHT * CELL_SIZE)
-        return true;
+	if (x < 0 || x >= MAP_WIDTH * CELL_SIZE ||
+		y < 0 || y >= MAP_HEIGHT * CELL_SIZE)
+		return (true);
 
-    mapGridIndexX = (int)(x / CELL_SIZE);
-    mapGridIndexY = (int)(y / CELL_SIZE);
-    return map[mapGridIndexY][mapGridIndexX] != 0;
+	mapGridIndexX = (int)(x / CELL_SIZE);
+	mapGridIndexY = (int)(y / CELL_SIZE);
+	return (map[mapGridIndexY][mapGridIndexX] != 0);
 }
 
 /**
@@ -44,7 +45,7 @@ bool isWallAt(float x, float y)
  */
 bool isWithinMapBounds(float x, float y)
 {
-    return (x >= 0 && x <= MAP_WIDTH * CELL_SIZE &&
+	return (x >= 0 && x <= MAP_WIDTH * CELL_SIZE &&
 		y >= 0 && y <= MAP_HEIGHT * CELL_SIZE);
 }
 
@@ -56,34 +57,33 @@ bool isWithinMapBounds(float x, float y)
  */
 int getCellValue(int i, int j)
 {
-    return (map[i][j]);
+	return (map[i][j]);
 }
 
 /**
- * renderMapGrid - Render the map grid for visualization.
+ * drawMapGrid - Render the map grid for visualization.
  */
-void renderMapGrid(void)
+void drawMapGrid(void)
 {
-    int cellX;
-    int cellY;
-    color_t cellColor;
+	int cellX;
+	int cellY;
+	color_t cellColor;
 
-    for (int i = 0; i < MAP_HEIGHT; i++)
-    {
-        for (int j = 0; j < MAP_WIDTH; j++)
-        {
-            cellX = j * CELL_SIZE;
-            cellY = i * CELL_SIZE;
-            cellColor = map[i][j] != 0 ? 0xFFFFFFFF : 0x00000000;
+	for (int i = 0; i < MAP_HEIGHT; i++)
+	{
+		for (int j = 0; j < MAP_WIDTH; j++)
+		{
+			cellX = j * CELL_SIZE;
+			cellY = i * CELL_SIZE;
+			cellColor = map[i][j] != 0 ? 0xFFFFFFFF : 0x00000000;
 
-            drawFilledRect(
-                cellX * MINIMAP_SCALE_FACTOR,
-                cellY * MINIMAP_SCALE_FACTOR,
-                CELL_SIZE * MINIMAP_SCALE_FACTOR,
-                CELL_SIZE * MINIMAP_SCALE_FACTOR,
-                cellColor
-            );
-        }
-    }
+			drawFilledRect(
+					cellX * MINIMAP_SCALE,
+					cellY * MINIMAP_SCALE,
+					CELL_SIZE * MINIMAP_SCALE,
+					CELL_SIZE * MINIMAP_SCALE,
+					cellColor
+			);
+		}
+	}
 }
-

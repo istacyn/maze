@@ -7,8 +7,8 @@
 
 upng_t	*textures[NUM_TEXTURES];
 
-void loadTextures();
-void freeTextures();
+void initializeTextures(void);
+void freeTextures(void);
 
 #endif /* TEXTURES_H */
 
