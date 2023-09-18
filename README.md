@@ -1,6 +1,6 @@
 # Raycasting Game
 
-This is a simple raycasting game written in C. The game renders a 3D-like environment using raycasting techniques. It's inspired by classic first-person shooters and aims to provide a fun and educational experience for developers interested in game development and graphics programming.
+This is a simple raycasting game written in C. The game renders a 3D-like environment using raycasting techniques. 
 
 ![Game Screenshot](Maze_game.png)
 
