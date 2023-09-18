@@ -6,15 +6,15 @@ static const char *textureFilePaths[NUM_TEXTURES] = {
 	"./images/redbrick.png",		/* [0]  */
 	"./images/purplestone.png",		/* [1]  */
 	"./images/mossystone.png",		/* [2]  */
-	"./images/graystone.png",		/* [3]  */
+	"./images/blackstone.png",		/* [3]  */
 	"./images/colorstone.png",		/* [4]  */
 	"./images/bluestone.png",		/* [5]  */
-	"./images/wood.png",			/* [6]  */
+	"./images/lightgray.png",		/* [6]  */
 	"./images/eagle.png",			/* [7]  */
 	"./images/pikuma.png",			/* [8]  */
 	"./images/barrel.png",			/* [9]  */
 	"./images/light.png",			/* [10] */
-	"./images/table.png",			/* [11] */
+	"./images/barrel2.png",			/* [11] */
 	"./images/guard.png",			/* [12] */
 	"./images/armor.png"			/* [13] */
 };
