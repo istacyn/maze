@@ -9,7 +9,7 @@ static sprite_t sprites[NUM_SPRITES] = {
 	{ .x = 250, .y = 600, .texture = 11 }, /* barrel2 */
 	{ .x = 250, .y = 600, .texture = 10},  /* light */
 	{ .x = 300, .y = 400, .texture = 12 }, /* guard */
-	{ .x = 90, .y = 100, .texture = 13 }  /* armor */
+	{ .x = 90, .y = 100, .texture = 13 }  /* barrel3 */
 };
 
 /**
