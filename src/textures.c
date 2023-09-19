@@ -15,7 +15,7 @@ static const char *textureFilePaths[NUM_TEXTURES] = {
 	"./images/barrel.png",			/* [9]  */
 	"./images/light.png",			/* [10] */
 	"./images/barrel2.png",			/* [11] */
-	"./images/guard.png",			/* [12] */
+	"./images/barrel3.png",			/* [12] */
 	"./images/armor.png"			/* [13] */
 };
 
